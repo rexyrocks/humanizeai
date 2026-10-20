@@ -5,6 +5,7 @@ export default {async fetch(request,env={}){
  const url=new URL(request.url);try{
  if(request.method==='GET'&&url.pathname==='/')return new Response(PAGE,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'self' https://chatgpt.com https://*.chatgpt.com"}});
  if(request.method==='GET'&&url.pathname==='/app.js')return new Response(APP,{headers:{'Content-Type':'text/javascript','X-Content-Type-Options':'nosniff'}});
+ if(request.method==='GET'&&url.pathname==='/premium.js')return new Response(PREMIUM,{headers:{'Content-Type':'text/javascript','X-Content-Type-Options':'nosniff'}});
  if(request.method==='GET'&&url.pathname==='/health')return json({ok:true});
  if(url.pathname.startsWith('/api/'))rate(request);
  if(request.method==='GET'&&url.pathname==='/api/search'){

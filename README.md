@@ -1,6 +1,6 @@
 # HumanizeAI — BYOK beta
 
-Fast academic rewriting with exact checks, optional detailed review, and browser-local drafts. Bring your own supported provider key. The hosted beta preserves its existing owner-private audience.
+Fast academic rewriting with exact checks, optional detailed review, and browser-local drafts. Bring your own supported provider key. The hosted beta is public and requires each visitor to bring their own model key.
 
 ## Start
 
@@ -62,7 +62,7 @@ Browser QA exercised project creation, draft editing, real Crossref search, sour
 ## Data, privacy and retention
 Documents, source notes and up to 40 history snapshots per project persist unencrypted in this browser. Export JSON backups; clearing browser storage can erase drafts. Deleting a project removes its local drafts, sources and history. History restoration first saves the current draft. The server holds manuscripts only in request memory and does not log or cache them. Search metadata is cached for five minutes (at most roughly 100 queries per process). Providers receive search queries; a model receives passage, semantic ledger, project question, notes and bounded section context only with consent. Researcher Voice additionally sends the optional writing sample.
 
-External providers control their own retention; local deletion does not erase a provider's records. The hosted app is owner-private. Local deployment has no built-in user authentication and must remain loopback-only. Per-isolate rate limiting is a best-effort guard, not a distributed production quota. Production multi-user release requires authorization, durable storage, distributed limits, spend caps, monitoring and provider-policy review.
+External providers control their own retention; local deletion does not erase a provider's records. The hosted app is public BYOK. Local deployment has no built-in user authentication and must remain loopback-only. Per-isolate rate limiting is a best-effort guard, not a distributed production quota. Production multi-user release requires authorization, durable storage, distributed limits, spend caps, monitoring and provider-policy review.
 
 ## Implemented and deferred
 Implemented: five rewriting modes, sample conditioning, structured three-stage pipeline, hard preservation gate, separate semantic reviewer, side-by-side word diff, accept/reject/edit/revalidate, selected-text rewriting, project/section organization, basic rich formatting, draft history, local autosave, contextual notes, real Crossref/OpenAlex/Semantic Scholar search, saved papers, citation insertion, simplified APA/IEEE references, BibTeX, Markdown/HTML/JSON exports, CSV evidence inventory, plain text/Markdown and backup import, diagnostics, themes and focus mode.
@@ -76,7 +76,7 @@ Not implemented: full-text retrieval and automated literature synthesis, PDF/DOC
 - `scripts/assemble.mjs`: packages source into a self-contained Worker.
 - `scripts/dev.mjs`: dependency-free Node preview.
 - `worker/index.js`: generated deployable module; edit `src/` then rebuild.
-- `.openai/hosting.json`: private Site identity.
+- `.openai/hosting.json`: Site identity.
 
 Architecture deliberately uses a small Worker and browser persistence rather than the suggested Next.js/FastAPI/PostgreSQL stack for this first increment. The research report documents the migration path and trade-offs.
 
@@ -103,3 +103,9 @@ Passages consisting entirely of protected markers and punctuation return the ori
 ## Release verification — 20 October 2026
 
 34 automated checks passed. Browser QA covered project creation, sample loading, consent rejection, missing-key setup, provider selection, draft persistence, key clearing on reload, and history. A real Qwen fast rewrite completed in one generation (about 4.2 seconds), with zero exact-check issues. The production build and generated Worker validate. This is a small BYOK beta, not a funded shared inference service or a proven superior humanizer. Public audience expansion is a separate choice; this release preserves existing access.
+
+## Pro preview
+
+Free beta features: sequential batch review of up to three sections, up to ten device-local writing profiles, and Markdown revision reports (last five per project). Reports preserve originals and proposals; accepting a proposal requires passed checks and an unchanged source draft. Batch processing stops after a failure or after the current request when cancelled. API keys and writing samples are excluded from profiles and reports. Drafts and reports remain unencrypted browser data.
+
+The UI proposes ₹199/month as an unvalidated future price. No subscription checkout, user accounts, paid entitlements or included inference allowance is implemented. This is a working free preview, not a paid launch. Automated suite: 42 tests; batch generation tests use controlled responses, not live inference.

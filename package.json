@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/assemble.mjs && node scripts/dev.mjs",
-    "test": "node scripts/assemble.mjs && node --test tests/core.test.mjs benchmarks/harness.test.mjs",
+    "test": "node scripts/assemble.mjs && node --test tests/core.test.mjs tests/premium.test.mjs benchmarks/harness.test.mjs",
     "build": "node scripts/assemble.mjs && bash scripts/build.sh",
     "validate": "node scripts/validate-artifact.mjs",
     "benchmark": "node benchmarks/run.mjs",
