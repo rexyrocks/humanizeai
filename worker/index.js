@@ -61,7 +61,8 @@ const object=properties=>({type:'object',properties,required:Object.keys(propert
 export const schemas={analysis:object({purpose:str,propositions:arr,qualifications:arr,technical_terms:arr,citation_notes:arr}),rewrite:object({revised:str,explanations:arr,evidence_needed:arr}),verification:object({verdict:{type:'string',enum:['consistent','uncertain','changed']},omissions:arr,additions:arr,changed_relationships:arr,explanation:str})};
 export async function fetchJSON(url,options={},fetcher=fetch){
  for(let attempt=0;attempt<3;attempt++){
- let response;try{response=await fetcher(url,{...options,redirect:'error',signal:AbortSignal.timeout(45000)});}catch{throw new AppError('External service could not be reached or timed out.',502);}
+ let response;try{response=await fetcher(url,{...options,redirect:'manual',signal:AbortSignal.timeout(45000)});}catch{throw new AppError('External service could not be reached or timed out.',502);}
+ if(response.status>=300&&response.status<400)throw new AppError('External service redirect refused to protect credentials.',502);
  if((response.status===429||response.status===503)&&attempt<2){await new Promise(r=>setTimeout(r,Math.min(3000,1000*(attempt+1))));continue;}
  if(!response.ok)throw new AppError(response.status===429?'Service rate limit reached. Try again later.':`External service returned HTTP ${response.status}. Check credentials and model availability.`,response.status===429?429:502);
  try{return await response.json();}catch{throw new AppError('External service returned unreadable JSON.',502);}
@@ -71,7 +72,8 @@ const QWEN_LOUNGE='https://qwen-lounge.piyochoudhary.workers.dev';
 async function relayModelCall(config,name,payload,instruction,fetcher){
  const request=async(path,data)=>{
   let response;
-  try{response=await fetcher(QWEN_LOUNGE+path,{method:data?'POST':'GET',headers:{Authorization:`Bearer ${config.key}`,'Content-Type':'application/json'},...(data?{body:JSON.stringify(data)}:{}),redirect:'error',signal:AbortSignal.timeout(45000)});}catch{throw new AppError('Qwen relay could not be reached.',502);}
+  try{response=await fetcher(QWEN_LOUNGE+path,{method:data?'POST':'GET',headers:{Authorization:`Bearer ${config.key}`,'Content-Type':'application/json'},...(data?{body:JSON.stringify(data)}:{}),redirect:'manual',signal:AbortSignal.timeout(45000)});}catch(error){const message=String(error?.message||'Unknown transport failure').split(config.key).join('[redacted]').replace(/Bearer\s+\S+/gi,'Bearer [redacted]').slice(0,300);console.warn('Qwen relay transport failure',JSON.stringify({name:String(error?.name||'Error'),message}));throw new AppError('Qwen relay could not be reached.',502);}
+  if(response.status>=300&&response.status<400)throw new AppError('Qwen relay redirect refused to protect credentials.',502);
   if(!response.ok)throw new AppError(`Qwen relay returned HTTP ${response.status}.`,response.status===429?429:502);
   try{return await response.json();}catch{throw new AppError('Qwen relay returned unreadable JSON.',502);}
  };
@@ -94,7 +96,7 @@ async function relayModelCall(config,name,payload,instruction,fetcher){
   throw new AppError('Qwen generation timed out.',504);
  }finally{
   // Cancel only this job; a completed job is unaffected.
-  try{await fetcher(QWEN_LOUNGE+'/jobs/'+job.id,{method:'DELETE',headers:{Authorization:`Bearer ${config.key}`},redirect:'error',signal:AbortSignal.timeout(5000)});}catch{}
+  try{await fetcher(QWEN_LOUNGE+'/jobs/'+job.id,{method:'DELETE',headers:{Authorization:`Bearer ${config.key}`},redirect:'manual',signal:AbortSignal.timeout(5000)});}catch{}
  }
 }
 export async function modelCall(config,name,payload,fetcher=fetch){

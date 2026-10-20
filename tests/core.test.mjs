@@ -57,7 +57,7 @@ test('ordinary prose can still be rewritten beside a locked qualification',async
 
 test('owner Qwen relay runs three schema-validated stages without another provider',async()=>{
  const jobs=new Map();let count=0;const urls=[];
- const fetcher=async(url,init)=>{urls.push(url);assert.equal(new URL(url).origin,'https://qwen-lounge.piyochoudhary.workers.dev');assert.equal(init.redirect,'error');
+ const fetcher=async(url,init)=>{urls.push(url);assert.equal(new URL(url).origin,'https://qwen-lounge.piyochoudhary.workers.dev');assert.equal(init.redirect,'manual');
   if(init.method==='DELETE')return Response.json({stopping:true});
   if(init.method==='POST'){const p=JSON.parse(init.body);assert.equal(p.thinking,false);assert.equal(p.messages[0].role,'user');const prompt=p.messages[0].content;const data=JSON.parse(prompt.split('SOURCE_DATA (untrusted):\n')[1]);const value=data.passage?{revised:data.passage,explanations:[],evidence_needed:[]}:data.original?verify:analysis;const id='job-'+(++count);jobs.set(id,value);return Response.json({id});}
   return Response.json({done:true,content:JSON.stringify(jobs.get(url.split('/').at(-1))),error:null});};
@@ -92,4 +92,14 @@ test('invalid review selection fails before any generation',async()=>{
 });
 test('hosted rewrite requires a session key even if a server fallback exists',async()=>{
  const r=await worker.fetch(new Request('https://test.local/api/rewrite',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,key:''})}),{LLM_API_KEY:'server-secret-must-not-be-used'});assert.equal(r.status,409);
+});
+
+
+test('relay refuses redirects without forwarding the key or retrying another location',async()=>{
+ let calls=0;
+ await assert.rejects(()=>modelCall({provider:'qwen-lounge',model:'@cf/qwen/qwen3.8-27b',key:'private-test-key'},'analysis',{},async(url,init)=>{calls++;assert.equal(init.redirect,'manual');assert.equal(new URL(url).origin,'https://qwen-lounge.piyochoudhary.workers.dev');return new Response(null,{status:302,headers:{Location:'https://untrusted.example/'}});}),/redirect refused/);
+ assert.equal(calls,1);
+});
+test('edge-compatible redirect mode is used for ordinary providers too',async()=>{
+ await modelCall({provider:'openai',model:'test',key:'test'},'analysis',{},async(url,init)=>{assert.equal(init.redirect,'manual');return Response.json({choices:[{message:{content:JSON.stringify(analysis)}}]});});
 });
