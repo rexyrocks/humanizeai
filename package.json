@@ -1,0 +1,13 @@
+{
+  "name": "humanizeai-research-studio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/assemble.mjs && node scripts/dev.mjs",
+    "test": "node scripts/assemble.mjs && node --test tests/core.test.mjs benchmarks/harness.test.mjs",
+    "build": "node scripts/assemble.mjs && bash scripts/build.sh",
+    "validate": "node scripts/validate-artifact.mjs",
+    "benchmark": "node benchmarks/run.mjs",
+    "benchmark:live": "node benchmarks/run.mjs --live"
+  }
+}
